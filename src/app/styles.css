@@ -1,0 +1,169 @@
+:root {
+  color: #1c1917;
+  background: #f6f3ee;
+  font-family: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button, input, textarea { font: inherit; }
+
+h1, p { margin: 0; }
+
+h1 {
+  font-family: "Fraunces Variable", ui-serif, georgia, serif;
+  font-style: italic;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.mark {
+  color: #c2410c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.muted { color: #57534e; }
+
+.error {
+  margin: 1rem 0;
+  color: #9a3412;
+}
+
+.primary, .choice {
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.primary {
+  min-height: 3.2rem;
+  padding: 0.8rem 1.3rem;
+  background: #c2410c;
+  color: #fffaf5;
+  font-weight: 700;
+}
+
+.panel, .home, .stage-page {
+  width: min(920px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.panel, .home {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.panel h1, .home h1, .question h1, .board h1 { font-size: clamp(2.6rem, 8vw, 5rem); }
+
+input, textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e7e5e4;
+  border-radius: 1rem;
+  background: white;
+}
+
+textarea { min-height: 8rem; }
+
+.home-links, .lobby, .choices, .options {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.3rem;
+  border-radius: 1.4rem;
+  background: #0c0a09;
+  color: #fafaf9;
+  text-decoration: none;
+}
+
+.home-card span { color: #fdba74; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.home-card strong {
+  font-family: "Fraunces Variable", ui-serif, georgia, serif;
+  font-size: 2.4rem;
+  font-style: italic;
+  font-weight: 560;
+}
+
+.topbar, .lobby {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.code {
+  margin: 0;
+  font-family: "Fraunces Variable", ui-serif, georgia, serif;
+  font-size: clamp(4rem, 12vw, 8rem);
+  font-style: italic;
+  line-height: 0.8;
+}
+
+.lobby img, .qr-empty {
+  width: min(320px, 100%);
+  border-radius: 1.4rem;
+  background: white;
+}
+
+.lobby ul { padding: 0; list-style: none; }
+
+.lobby li + li { margin-top: 0.4rem; }
+
+.question, .board { display: flex; flex-direction: column; gap: 1rem; }
+
+.kicker { color: #c2410c; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+
+.timer {
+  font-family: "Fraunces Variable", ui-serif, georgia, serif;
+  font-size: 4rem;
+  font-style: italic;
+}
+
+.option, .choice {
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: #0c0a09;
+  color: #fafaf9;
+  text-align: left;
+}
+
+.correct { background: #c2410c; }
+
+.picked { outline: 3px solid #fdba74; }
+
+.board ol { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+
+.board li, .place {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.place {
+  font-family: "Fraunces Variable", ui-serif, georgia, serif;
+  font-size: 3rem;
+  font-style: italic;
+}
+
+.board em { margin-left: auto; font-style: normal; }
+
+@media (width < 800px) {
+  .lobby, .topbar { flex-direction: column; align-items: stretch; }
+}
