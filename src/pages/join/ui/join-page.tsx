@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useGame, type Question } from "@entities/game";
 
 type SavedPlayer = { code: string; nickname: string; player_token?: string };
+type MyAnswer = { questionId: string; optionIds: string[]; text: string };
 
 export function JoinPage() {
   const saved = readPlayer();
@@ -10,6 +11,7 @@ export function JoinPage() {
   const [code, setCode] = useState(preset);
   const [nickname, setNickname] = useState(saved?.nickname ?? "");
   const [session, setSession] = useState<SavedPlayer | null>(saved?.player_token ? saved : null);
+  const [myAnswer, setMyAnswer] = useState<MyAnswer | null>(null);
   const hello = useMemo(
     () =>
       session
@@ -18,6 +20,26 @@ export function JoinPage() {
     [session],
   );
   const { view, send } = useGame(hello);
+
+  useEffect(() => {
+    const questionId = view.question?.question_id;
+    if (!questionId) {
+      setMyAnswer(null);
+      return;
+    }
+    setMyAnswer((current) => (current?.questionId === questionId ? current : null));
+  }, [view.question?.question_id]);
+
+  function leave() {
+    sessionStorage.removeItem("quizelive.player");
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("code")) {
+      url.searchParams.delete("code");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    setSession(null);
+    setCode("");
+  }
 
   if (!session) {
     return (
@@ -38,50 +60,113 @@ export function JoinPage() {
   }
 
   const question = view.question;
-  const correct = new Set(view.reveal?.correct_option_ids ?? []);
+  const correctIds = new Set(view.reveal?.correct_option_ids ?? []);
+  const mineIds = new Set(myAnswer?.questionId === question?.question_id ? myAnswer.optionIds : []);
+  const stranded = Boolean(view.error) || view.phase === "finished";
+
+  if (stranded) {
+    return (
+      <main className="panel">
+        <p className="mark">Пульт</p>
+        {view.phase === "finished" ? (
+          <Place board={view.board} nickname={session.nickname} finished />
+        ) : (
+          <>
+            <h1>Комната недоступна</h1>
+            {view.error ? <p className="error">{view.error}</p> : null}
+          </>
+        )}
+        <button className="primary" type="button" onClick={leave}>
+          Выйти
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="panel">
       <p className="mark">{view.code || session.code}</p>
-      {view.error ? <p className="error">{view.error}</p> : null}
+      <button className="choice" type="button" onClick={leave}>
+        Выйти
+      </button>
       {!view.connected ? <p className="muted">Подключаемся…</p> : null}
       {view.phase === "lobby" ? <h1>Вы в комнате. Ждём старт.</h1> : null}
       {view.phase === "question" && question && !view.accepted ? (
         <AnswerForm
           key={question.question_id}
           question={question}
-          onSubmit={(optionIds, answer) =>
+          onSubmit={(optionIds, answer) => {
+            setMyAnswer({ questionId: question.question_id, optionIds, text: answer });
             send({
               submit_answer: {
                 question_id: question.question_id,
                 option_ids: optionIds,
                 text: answer,
               },
-            })
-          }
+            });
+          }}
         />
       ) : null}
       {view.accepted && view.phase === "question" ? <h1>Ответ принят</h1> : null}
       {view.phase === "reveal" && question ? (
-        <section>
-          <h1>{question.text}</h1>
-          <div className="choices">
-            {(question.options ?? []).map((option) => (
-              <p className={correct.has(option.id) ? "choice correct" : "choice"} key={option.id}>
-                {option.text}
-              </p>
-            ))}
-            {view.reveal?.correct_texts?.map((item) => (
-              <p className="choice correct" key={item}>
-                {item}
-              </p>
-            ))}
-          </div>
-        </section>
+        <RevealBoard
+          question={question}
+          correctIds={correctIds}
+          mineIds={mineIds}
+          myText={myAnswer?.questionId === question.question_id ? myAnswer.text : ""}
+          correctTexts={view.reveal?.correct_texts ?? []}
+        />
       ) : null}
-      {view.phase === "leaderboard" || view.phase === "finished" ? <Place board={view.board} nickname={session.nickname} finished={view.phase === "finished"} /> : null}
+      {view.phase === "leaderboard" ? <Place board={view.board} nickname={session.nickname} finished={false} /> : null}
     </main>
   );
+}
+
+function RevealBoard({
+  question,
+  correctIds,
+  mineIds,
+  myText,
+  correctTexts,
+}: {
+  question: Question;
+  correctIds: Set<string>;
+  mineIds: Set<string>;
+  myText: string;
+  correctTexts: string[];
+}) {
+  const normalizedCorrect = new Set(correctTexts.map(normalizeText));
+  const myTextOk = myText.trim() !== "" && normalizedCorrect.has(normalizeText(myText));
+  const showWrongText = question.type === "text" && myText.trim() !== "" && !myTextOk;
+
+  return (
+    <section>
+      <h1>{question.text}</h1>
+      <div className="choices">
+        {(question.options ?? []).map((option) => (
+          <p className={optionVerdictClass(option.id, correctIds, mineIds)} key={option.id}>
+            {option.text}
+          </p>
+        ))}
+        {correctTexts.map((item) => (
+          <p className="choice verdict-correct" key={`ok-${item}`}>
+            {item}
+          </p>
+        ))}
+        {showWrongText ? <p className="choice verdict-wrong">{myText}</p> : null}
+      </div>
+    </section>
+  );
+}
+
+function optionVerdictClass(optionId: string, correctIds: Set<string>, mineIds: Set<string>) {
+  if (correctIds.has(optionId)) return "choice verdict-correct";
+  if (mineIds.has(optionId)) return "choice verdict-wrong";
+  return "choice";
+}
+
+function normalizeText(value: string) {
+  return value.trim().toLocaleLowerCase("ru");
 }
 
 function AnswerForm({ question, onSubmit }: { question: Question; onSubmit: (optionIds: string[], text: string) => void }) {

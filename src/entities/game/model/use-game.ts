@@ -11,7 +11,12 @@ export function useGame(hello: Command | null) {
 
   useEffect(() => {
     helloRef.current = hello;
-    if (!hello) return undefined;
+    if (!hello) {
+      setView(emptyView);
+      socketRef.current?.close();
+      socketRef.current = null;
+      return undefined;
+    }
 
     let stopped = false;
     let socket: WebSocket | null = null;
@@ -110,10 +115,12 @@ function reduce(current: View, message: ServerMessage): View {
   }
 
   if (message.answer_accepted) return { ...current, accepted: true, error: "" };
-  if (message.question_revealed) return { ...current, reveal: message.question_revealed, error: "" };
+  if (message.question_revealed) {
+    return { ...current, reveal: message.question_revealed, phase: "reveal", error: "" };
+  }
 
   if (message.leaderboard) {
-    return { ...current, board: message.leaderboard.entries ?? [], phase: current.phase || "leaderboard" };
+    return { ...current, board: message.leaderboard.entries ?? [], phase: "leaderboard", error: "" };
   }
 
   if (message.game_finished) {

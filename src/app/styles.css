@@ -148,6 +148,18 @@ textarea { min-height: 8rem; }
 
 .picked { outline: 3px solid #fdba74; }
 
+.verdict-correct {
+  background: #dcfce7;
+  border: 3px solid #16a34a;
+  color: #14532d;
+}
+
+.verdict-wrong {
+  background: #fee2e2;
+  border: 3px solid #dc2626;
+  color: #7f1d1d;
+}
+
 .board ol { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
 
 .board li, .place {

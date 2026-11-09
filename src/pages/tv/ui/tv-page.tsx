@@ -10,6 +10,18 @@ export function TvPage() {
   const { view, send } = useGame(hello);
   const [qr, setQr] = useState("");
 
+  function startFresh() {
+    sessionStorage.removeItem("quizelive.hostResume");
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("token")) {
+      url.searchParams.delete("token");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    setDraft("");
+    setToken("");
+    setQr("");
+  }
+
   useEffect(() => {
     if (!view.code) return undefined;
     const url = `${window.location.origin}/join?code=${view.code}`;
@@ -36,6 +48,32 @@ export function TvPage() {
     );
   }
 
+  if (view.error && !view.code) {
+    return (
+      <main className="panel">
+        <p className="mark">Экран</p>
+        <h1>Не удалось открыть комнату</h1>
+        <p className="error">{view.error}</p>
+        <button className="primary" type="button" onClick={startFresh}>
+          Ввести новый токен
+        </button>
+      </main>
+    );
+  }
+
+  if (!view.code) {
+    return (
+      <main className="panel">
+        <p className="mark">Экран</p>
+        <h1>Открываем комнату…</h1>
+        <p className="muted">{view.connected ? "Ждём ответ сервера" : "Нет связи"}</p>
+        <button className="choice" type="button" onClick={startFresh}>
+          Другой токен
+        </button>
+      </main>
+    );
+  }
+
   return (
     <main className="stage-page">
       <header className="topbar">
@@ -43,30 +81,26 @@ export function TvPage() {
           <p className="mark">Эфир</p>
           <p className="muted">{label(view.phase, view.connected)}</p>
         </div>
-        {view.code ? <p className="code">{view.code}</p> : null}
+        <p className="code">{view.code}</p>
+        <button className="choice" type="button" onClick={startFresh}>
+          Новая игра
+        </button>
       </header>
       {view.error ? <p className="error">{view.error}</p> : null}
-      {!view.code ? (
-        <button
-          className="choice"
-          type="button"
-          onClick={() => {
-            sessionStorage.removeItem("quizelive.hostResume");
-            setToken("");
-          }}
-        >
-          Другой токен
-        </button>
-      ) : null}
       {view.phase === "lobby" || !view.phase ? <Lobby qr={qr} players={view.players} onStart={() => send({ start_game: {} })} /> : null}
       {view.phase === "question" && view.question ? (
         <QuestionBoard question={view.question} onNext={() => send({ next_step: {} })} action="Показать ответ" />
       ) : null}
       {view.phase === "reveal" && view.question ? (
-        <QuestionBoard question={view.question} reveal={view.reveal} onNext={() => send({ next_step: {} })} action="Таблица" />
+        <QuestionBoard question={view.question} reveal={view.reveal} onNext={() => send({ next_step: {} })} action="Дальше" />
       ) : null}
       {view.phase === "leaderboard" || view.phase === "finished" ? (
-        <Board entries={view.board} finished={view.phase === "finished"} onNext={() => send({ next_step: {} })} />
+        <Board
+          entries={view.board}
+          finished={view.phase === "finished"}
+          onNext={() => send({ next_step: {} })}
+          onNewGame={startFresh}
+        />
       ) : null}
     </main>
   );
@@ -129,11 +163,22 @@ function QuestionBoard({
       <button className="primary" type="button" onClick={onNext}>
         {action}
       </button>
+      {reveal ? <p className="muted">Или подождите — дальше само</p> : null}
     </section>
   );
 }
 
-function Board({ entries, finished, onNext }: { entries: { nickname: string; score: number; rank: number }[]; finished: boolean; onNext: () => void }) {
+function Board({
+  entries,
+  finished,
+  onNext,
+  onNewGame,
+}: {
+  entries: { nickname: string; score: number; rank: number }[];
+  finished: boolean;
+  onNext: () => void;
+  onNewGame: () => void;
+}) {
   return (
     <section className="board">
       <h1>{finished ? "Итог" : "Счёт"}</h1>
@@ -146,11 +191,16 @@ function Board({ entries, finished, onNext }: { entries: { nickname: string; sco
           </li>
         ))}
       </ol>
-      {finished ? null : (
+      {finished ? (
+        <button className="primary" type="button" onClick={onNewGame}>
+          Новая игра
+        </button>
+      ) : (
         <button className="primary" type="button" onClick={onNext}>
           Дальше
         </button>
       )}
+      {!finished ? <p className="muted">Или подождите — дальше само</p> : null}
     </section>
   );
 }
@@ -169,7 +219,7 @@ function label(phase: string, connected: boolean) {
   if (!connected) return "Нет связи";
   if (phase === "question") return "Вопрос";
   if (phase === "reveal") return "Ответ";
-  if (phase === "leaderboard") return "Таблица";
+  if (phase === "leaderboard") return "Промежуточный счёт";
   if (phase === "finished") return "Конец";
   return "Лобби";
 }
