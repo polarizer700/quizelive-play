@@ -252,3 +252,9 @@ button.primary:disabled {
 @media (width < 800px) {
   .lobby, .topbar { flex-direction: column; align-items: stretch; }
 }
+
+button:not(:disabled),
+a[href],
+[role="button"] {
+  cursor: pointer;
+}
