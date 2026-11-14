@@ -39,7 +39,11 @@ jobs:
 
       - name: Deploy static files
         run: |
-          rsync -az --delete --chmod=D755,F644 -e "ssh -i ~/.ssh/deploy_key" dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/quizelive/play/
+          for i in 1 2 3; do
+            rsync -az --delete --chmod=D755,F644 -e "ssh -i ~/.ssh/deploy_key" dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/quizelive/play/ && exit 0
+            echo "rsync attempt $i failed, retrying..."; sleep 5
+          done
+          exit 1
 
       - name: Smoke check
         run: curl -fsS -o /dev/null https://play.quizlive.ru/
