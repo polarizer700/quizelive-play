@@ -9,10 +9,15 @@ export function useGame(hello: Command | null) {
   const socketRef = useRef<WebSocket | null>(null);
   const helloRef = useRef(hello);
 
+  const [prevHello, setPrevHello] = useState(hello);
+  if (prevHello !== hello) {
+    setPrevHello(hello);
+    if (!hello) setView(emptyView);
+  }
+
   useEffect(() => {
     helloRef.current = hello;
     if (!hello) {
-      setView(emptyView);
       socketRef.current?.close();
       socketRef.current = null;
       return undefined;

@@ -1,19 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { legal } from "@shared/config/legal";
 
 const STORAGE_KEY = "quizelive.cookieConsent";
 
 export function CookieBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
+  const [visible, setVisible] = useState(() => {
     try {
-      setVisible(window.localStorage.getItem(STORAGE_KEY) !== "accepted");
+      return window.localStorage.getItem(STORAGE_KEY) !== "accepted";
     } catch {
-      setVisible(true);
+      return true;
     }
-  }, []);
+  });
 
   if (!visible) return null;
 

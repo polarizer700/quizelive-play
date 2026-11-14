@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useGame, type Question } from "@entities/game";
 import { legal } from "@shared/config/legal";
@@ -23,14 +23,12 @@ export function JoinPage() {
   );
   const { view, send } = useGame(hello);
 
-  useEffect(() => {
-    const questionId = view.question?.question_id;
-    if (!questionId) {
-      setMyAnswer(null);
-      return;
-    }
-    setMyAnswer((current) => (current?.questionId === questionId ? current : null));
-  }, [view.question?.question_id]);
+  const questionId = view.question?.question_id ?? null;
+  const [prevQuestionId, setPrevQuestionId] = useState(questionId);
+  if (prevQuestionId !== questionId) {
+    setPrevQuestionId(questionId);
+    setMyAnswer(null);
+  }
 
   function leave() {
     sessionStorage.removeItem("quizelive.player");
