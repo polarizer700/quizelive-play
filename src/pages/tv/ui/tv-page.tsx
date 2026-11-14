@@ -89,10 +89,27 @@ export function TvPage() {
       {view.error ? <p className="error">{view.error}</p> : null}
       {view.phase === "lobby" || !view.phase ? <Lobby qr={qr} players={view.players} onStart={() => send({ start_game: {} })} /> : null}
       {view.phase === "question" && view.question ? (
-        <QuestionBoard question={view.question} onNext={() => send({ next_step: {} })} action="Показать ответ" />
+        <QuestionBoard
+          question={view.question}
+          players={view.players}
+          answeredIds={view.answeredIds}
+          answeredCount={view.answeredCount}
+          answeredTotal={view.answeredTotal}
+          onNext={() => send({ next_step: {} })}
+          action="Показать ответ"
+        />
       ) : null}
       {view.phase === "reveal" && view.question ? (
-        <QuestionBoard question={view.question} reveal={view.reveal} onNext={() => send({ next_step: {} })} action="Дальше" />
+        <QuestionBoard
+          question={view.question}
+          reveal={view.reveal}
+          players={view.players}
+          answeredIds={view.answeredIds}
+          answeredCount={view.answeredCount}
+          answeredTotal={view.answeredTotal}
+          onNext={() => send({ next_step: {} })}
+          action="Дальше"
+        />
       ) : null}
       {view.phase === "leaderboard" || view.phase === "finished" ? (
         <Board
@@ -132,25 +149,41 @@ function Lobby({ qr, players, onStart }: { qr: string; players: { id: string; ni
 function QuestionBoard({
   question,
   reveal,
+  players,
+  answeredIds,
+  answeredCount,
+  answeredTotal,
   onNext,
   action,
 }: {
   question: NonNullable<ReturnType<typeof useGame>["view"]["question"]>;
   reveal?: ReturnType<typeof useGame>["view"]["reveal"];
+  players: { id: string; nickname: string }[];
+  answeredIds: string[];
+  answeredCount: number;
+  answeredTotal: number;
   onNext: () => void;
   action: string;
 }) {
   const left = useSecondsLeft(question.deadline_unix_ms);
   const correct = new Set(reveal?.correct_option_ids ?? []);
+  const answered = new Set(answeredIds);
+  const answeredNames = players.filter((player) => answered.has(player.id)).map((player) => player.nickname);
 
   return (
     <section className="question">
       <p className="kicker">
         {question.index} / {question.total}
-        {question.type === "text" ? "" : ""}
       </p>
+      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
       <h1>{question.text}</h1>
       <p className="timer">{left}</p>
+      {!reveal && answeredTotal > 0 ? (
+        <p className="muted">
+          Ответили {answeredCount} из {answeredTotal}
+          {answeredNames.length ? `: ${answeredNames.join(", ")}` : ""}
+        </p>
+      ) : null}
       <div className="options">
         {(question.options ?? []).map((option) => (
           <p className={correct.has(option.id) ? "option correct" : "option"} key={option.id}>

@@ -176,6 +176,79 @@ textarea { min-height: 8rem; }
 
 .board em { margin-left: auto; font-style: normal; }
 
+.status {
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.consent {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  color: #57534e;
+  font-size: 0.95rem;
+}
+
+.consent input {
+  width: auto;
+  margin-top: 0.25rem;
+}
+
+.consent a { color: #c2410c; }
+
+.question-image {
+  display: block;
+  width: min(100%, 520px);
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 1.2rem;
+  background: #0c0a09;
+}
+
+.cookie-banner {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem 1.1rem;
+  border-radius: 1.2rem;
+  background: #0c0a09;
+  color: #fafaf9;
+  box-shadow: 0 12px 40px rgba(12, 10, 9, 0.28);
+}
+
+.cookie-banner a { color: #fdba74; }
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  width: min(520px, calc(100% - 2rem));
+  margin: 1.5rem auto 2rem;
+  color: #57534e;
+  font-size: 0.9rem;
+}
+
+.legal-links a { color: inherit; }
+
+.age-mark {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+button.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 @media (width < 800px) {
   .lobby, .topbar { flex-direction: column; align-items: stretch; }
 }

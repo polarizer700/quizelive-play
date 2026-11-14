@@ -107,14 +107,35 @@ function reduce(current: View, message: ServerMessage): View {
     const same = current.question?.question_id === message.question_started.question_id;
     return {
       ...current,
+      phase: "question",
       question: message.question_started,
       reveal: null,
       accepted: same ? current.accepted : false,
+      answeredIds: same ? current.answeredIds : [],
+      answeredCount: same ? current.answeredCount : 0,
+      answeredTotal: same ? current.answeredTotal : 0,
       error: "",
     };
   }
 
   if (message.answer_accepted) return { ...current, accepted: true, error: "" };
+
+  if (message.answers_progress) {
+    const progress = message.answers_progress;
+    const question =
+      current.question && current.question.question_id === progress.question_id
+        ? { ...current.question, deadline_unix_ms: progress.deadline_unix_ms }
+        : current.question;
+    return {
+      ...current,
+      question,
+      answeredIds: progress.answered_ids ?? [],
+      answeredCount: progress.answered,
+      answeredTotal: progress.total,
+      error: "",
+    };
+  }
+
   if (message.question_revealed) {
     return { ...current, reveal: message.question_revealed, phase: "reveal", error: "" };
   }

@@ -13,6 +13,7 @@ export type Question = {
   type: "single" | "multiple" | "text";
   time_limit_sec: number;
   options?: { id: string; text: string }[];
+  image_url?: string;
   deadline_unix_ms: number;
 };
 
@@ -20,6 +21,14 @@ export type Reveal = {
   question_id: string;
   correct_option_ids?: string[];
   correct_texts?: string[];
+};
+
+export type AnswersProgress = {
+  question_id: string;
+  answered: number;
+  total: number;
+  answered_ids: string[];
+  deadline_unix_ms: number;
 };
 
 export type Entry = {
@@ -35,6 +44,7 @@ export type ServerMessage = {
   host_resume?: { token: string };
   question_started?: Question;
   answer_accepted?: { question_id: string };
+  answers_progress?: AnswersProgress;
   question_revealed?: Reveal;
   leaderboard?: { entries?: Entry[] };
   game_finished?: { entries?: Entry[] };
@@ -50,6 +60,9 @@ export type View = {
   reveal: Reveal | null;
   board: Entry[];
   accepted: boolean;
+  answeredIds: string[];
+  answeredCount: number;
+  answeredTotal: number;
   selfId: string;
   error: string;
 };
@@ -63,6 +76,9 @@ export const emptyView: View = {
   reveal: null,
   board: [],
   accepted: false,
+  answeredIds: [],
+  answeredCount: 0,
+  answeredTotal: 0,
   selfId: "",
   error: "",
 };

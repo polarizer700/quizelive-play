@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useGame, type Question } from "@entities/game";
+import { legal } from "@shared/config/legal";
 
 type SavedPlayer = { code: string; nickname: string; player_token?: string };
 type MyAnswer = { questionId: string; optionIds: string[]; text: string };
@@ -12,6 +13,7 @@ export function JoinPage() {
   const [nickname, setNickname] = useState(saved?.nickname ?? "");
   const [session, setSession] = useState<SavedPlayer | null>(saved?.player_token ? saved : null);
   const [myAnswer, setMyAnswer] = useState<MyAnswer | null>(null);
+  const [consent, setConsent] = useState(false);
   const hello = useMemo(
     () =>
       session
@@ -39,6 +41,7 @@ export function JoinPage() {
     }
     setSession(null);
     setCode("");
+    setConsent(false);
   }
 
   if (!session) {
@@ -48,9 +51,19 @@ export function JoinPage() {
         <h1>Войти в комнату</h1>
         <input inputMode="numeric" maxLength={4} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Код" />
         <input maxLength={20} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="Имя" />
+        <label className="consent">
+          <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
+          <span>
+            Соглашаюсь на обработку имени по{" "}
+            <a href={legal.privacyUrl} target="_blank" rel="noreferrer">
+              политике конфиденциальности
+            </a>
+          </span>
+        </label>
         <button
           className="primary"
           type="button"
+          disabled={!consent || code.length !== 4 || nickname.trim().length === 0}
           onClick={() => setSession({ code, nickname: nickname.trim() })}
         >
           Войти
@@ -61,7 +74,9 @@ export function JoinPage() {
 
   const question = view.question;
   const correctIds = new Set(view.reveal?.correct_option_ids ?? []);
-  const mineIds = new Set(myAnswer?.questionId === question?.question_id ? myAnswer.optionIds : []);
+  const mineIds = new Set(
+    myAnswer !== null && question && myAnswer.questionId === question.question_id ? myAnswer.optionIds : [],
+  );
   const stranded = Boolean(view.error) || view.phase === "finished";
 
   if (stranded) {
@@ -91,10 +106,13 @@ export function JoinPage() {
       </button>
       {!view.connected ? <p className="muted">Подключаемся…</p> : null}
       {view.phase === "lobby" ? <h1>Вы в комнате. Ждём старт.</h1> : null}
-      {view.phase === "question" && question && !view.accepted ? (
+      {view.phase === "question" && question ? (
         <AnswerForm
           key={question.question_id}
           question={question}
+          accepted={view.accepted}
+          picked={mineIds}
+          lockedText={myAnswer?.questionId === question.question_id ? myAnswer.text : ""}
           onSubmit={(optionIds, answer) => {
             setMyAnswer({ questionId: question.question_id, optionIds, text: answer });
             send({
@@ -107,7 +125,6 @@ export function JoinPage() {
           }}
         />
       ) : null}
-      {view.accepted && view.phase === "question" ? <h1>Ответ принят</h1> : null}
       {view.phase === "reveal" && question ? (
         <RevealBoard
           question={question}
@@ -141,6 +158,7 @@ function RevealBoard({
 
   return (
     <section>
+      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
       <h1>{question.text}</h1>
       <div className="choices">
         {(question.options ?? []).map((option) => (
@@ -169,40 +187,63 @@ function normalizeText(value: string) {
   return value.trim().toLocaleLowerCase("ru");
 }
 
-function AnswerForm({ question, onSubmit }: { question: Question; onSubmit: (optionIds: string[], text: string) => void }) {
-  const [picked, setPicked] = useState<string[]>([]);
-  const [text, setText] = useState("");
+function AnswerForm({
+  question,
+  accepted,
+  picked,
+  lockedText,
+  onSubmit,
+}: {
+  question: Question;
+  accepted: boolean;
+  picked: Set<string>;
+  lockedText: string;
+  onSubmit: (optionIds: string[], text: string) => void;
+}) {
+  const [selected, setSelected] = useState<string[]>([...picked]);
+  const [text, setText] = useState(lockedText);
 
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        onSubmit(question.type === "text" ? [] : picked, question.type === "text" ? text : "");
+        if (accepted) return;
+        onSubmit(question.type === "text" ? [] : selected, question.type === "text" ? text : "");
       }}
     >
       <p className="kicker">
         {question.index} / {question.total}
       </p>
+      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
       <h1>{question.text}</h1>
+      {accepted ? <p className="status">Ответ принят</p> : null}
       {question.type === "text" ? (
-        <input value={text} onChange={(event) => setText(event.target.value)} placeholder="Ответ" />
+        <input
+          value={text}
+          disabled={accepted}
+          onChange={(event) => setText(event.target.value)}
+          placeholder="Ответ"
+        />
       ) : (
         <div className="choices">
           {(question.options ?? []).map((option) => (
             <button
-              className={picked.includes(option.id) ? "choice picked" : "choice"}
+              className={selected.includes(option.id) || picked.has(option.id) ? "choice picked" : "choice"}
               key={option.id}
               type="button"
-              onClick={() => setPicked((current) => toggle(current, option.id, question.type === "single"))}
+              disabled={accepted}
+              onClick={() => setSelected((current) => toggle(current, option.id, question.type === "single"))}
             >
               {option.text}
             </button>
           ))}
         </div>
       )}
-      <button className="primary" type="submit">
-        Ответить
-      </button>
+      {accepted ? null : (
+        <button className="primary" type="submit">
+          Ответить
+        </button>
+      )}
     </form>
   );
 }
