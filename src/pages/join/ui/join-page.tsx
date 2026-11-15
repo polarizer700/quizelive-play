@@ -44,7 +44,7 @@ export function JoinPage() {
 
   if (!session) {
     return (
-      <main className="panel">
+      <main className="panel join">
         <p className="mark">Пульт</p>
         <h1>Войти в комнату</h1>
         <input inputMode="numeric" maxLength={4} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="Код" />
@@ -99,7 +99,7 @@ export function JoinPage() {
   return (
     <main className="panel">
       <p className="mark">{view.code || session.code}</p>
-      <button className="choice" type="button" onClick={leave}>
+      <button className="leave" type="button" onClick={leave}>
         Выйти
       </button>
       {!view.connected ? <p className="muted">Подключаемся…</p> : null}
@@ -207,6 +207,7 @@ function AnswerForm({
 
   return (
     <form
+      className="answer-form"
       onSubmit={(event) => {
         event.preventDefault();
         if (accepted) return;

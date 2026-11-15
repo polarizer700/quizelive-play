@@ -78,7 +78,7 @@ h1 {
   font-weight: 700;
 }
 
-.primary, .choice {
+.primary, .choice, .leave {
   border: 3px solid var(--ink);
   border-radius: 0;
   box-shadow: 5px 5px 0 var(--ink);
@@ -89,12 +89,12 @@ h1 {
   transition: transform 0.1s steps(2), box-shadow 0.1s steps(2);
 }
 
-.primary:hover, .choice:hover {
+.primary:hover, .choice:hover, .leave:hover {
   transform: translate(-1px, -1px);
   box-shadow: 6px 6px 0 var(--ink);
 }
 
-.primary:active, .choice:active {
+.primary:active, .choice:active, .leave:active {
   transform: translate(5px, 5px);
   box-shadow: 0 0 0 var(--ink);
 }
@@ -104,6 +104,14 @@ h1 {
   padding: 0.8rem 1.3rem;
   background: var(--pink);
   color: var(--ink);
+}
+
+/* «Выйти» из игры — кобальт, чтобы не сливаться с вариантами ответов и «Ответить» */
+.leave {
+  width: max-content;
+  padding: 0.55rem 1.1rem;
+  background: var(--cobalt);
+  color: #fff;
 }
 
 .panel, .home, .stage-page {
@@ -333,6 +341,21 @@ textarea { min-height: 8rem; }
 }
 
 .consent a { color: var(--cobalt); }
+
+/* Пульт: вход в комнату и форма ответа — воздух между блоками */
+.join { gap: 1.25rem; }
+
+.join h1 { margin-bottom: 0.75rem; }
+
+.join .primary { margin-top: 0.75rem; }
+
+.answer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.answer-form .primary { margin-top: 0.75rem; }
 
 .question-image {
   display: block;
