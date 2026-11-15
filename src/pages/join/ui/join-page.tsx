@@ -103,7 +103,15 @@ export function JoinPage() {
         Выйти
       </button>
       {!view.connected ? <p className="muted">Подключаемся…</p> : null}
-      {view.phase === "lobby" ? <h1>Вы в комнате. Ждём старт.</h1> : null}
+      {view.phase === "lobby" ? (
+        <>
+          <h1>Вы в комнате. Ждём старт.</h1>
+          <p className="rules">
+            Как начисляются баллы: половина очков вопроса — за верный ответ, вторая половина — за скорость.
+            Чем быстрее отвечаешь, тем больше баллов.
+          </p>
+        </>
+      ) : null}
       {view.phase === "question" && question ? (
         <AnswerForm
           key={question.question_id}
@@ -216,6 +224,9 @@ function AnswerForm({
     >
       <p className="kicker">
         {question.category ? `${question.category} · ` : ""}Вопрос {question.index} / {question.total} — смотрите на экран
+      </p>
+      <p className="points-hint">
+        До {question.points} баллов — половина за верный ответ, половина за скорость
       </p>
       {accepted ? <p className="status">Ответ принят</p> : null}
       {question.type === "text" ? (

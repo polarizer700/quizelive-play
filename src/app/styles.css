@@ -326,6 +326,37 @@ textarea { min-height: 8rem; }
   text-transform: uppercase;
 }
 
+/* Подсказка о начислении баллов у текущего вопроса */
+.points-hint {
+  width: max-content;
+  max-width: 100%;
+  padding: 0.25rem 0.7rem;
+  border: 2px solid var(--ink);
+  background: var(--acid);
+  color: var(--ink);
+  font-family: "Space Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Правила игры в лобби — пока игроки подключаются */
+.rules {
+  max-width: 34rem;
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  border: 3px solid var(--ink);
+  background: #fff;
+  box-shadow: 4px 4px 0 var(--ink);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.lobby .rules {
+  margin: 0.5rem 0;
+  font-size: 1.05rem;
+}
+
 .consent {
   display: flex;
   gap: 0.7rem;

@@ -12,6 +12,7 @@ export type Question = {
   text: string;
   type: "single" | "multiple" | "text";
   time_limit_sec: number;
+  points: number;
   category?: string;
   round?: number;
   round_total?: number;

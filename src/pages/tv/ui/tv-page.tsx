@@ -10,10 +10,14 @@ export function TvPage() {
   const { view, send } = useGame(hello);
   const [qr, setQr] = useState("");
 
-  // Протухший/чужой resume-токен не крутим вечно: чистим и показываем ввод токена
+  // Протухший/чужой resume-токен не крутим вечно: чистим и показываем ввод токена.
+  // Чистим только если упал именно сохранённый resume — ошибка нового токена
+  // из ссылки не должна сносить resume живой комнаты
   useEffect(() => {
-    if (view.error && !view.code) localStorage.removeItem("quizelive.hostResume");
-  }, [view.error, view.code]);
+    if (view.error && !view.code && token === localStorage.getItem("quizelive.hostResume")) {
+      localStorage.removeItem("quizelive.hostResume");
+    }
+  }, [view.error, view.code, token]);
 
   function startFresh() {
     localStorage.removeItem("quizelive.hostResume");
@@ -83,6 +87,7 @@ export function TvPage() {
   if (livePhase && view.question) {
     return (
       <main className="stage-live">
+        {view.error ? <p className="error">{view.error}</p> : null}
         <QuestionBoard
           question={view.question}
           reveal={view.phase === "reveal" ? view.reveal : undefined}
@@ -139,6 +144,10 @@ function Lobby({ qr, players, onStart }: { qr: string; players: { id: string; ni
             </li>
           ))}
         </ul>
+        <p className="rules">
+          Пока все подключаются — как считаются баллы: верный ответ даёт половину очков вопроса, вторая половина
+          достаётся за скорость. Чем быстрее отвечаете, тем больше баллов.
+        </p>
         <button className="primary" type="button" onClick={onStart}>
           Начать
         </button>
@@ -184,7 +193,7 @@ function QuestionBoard({
           {question.round && question.round_total && question.category ? " · " : null}
           {question.category || null}
           {question.category || (question.round && question.round_total) ? " · " : null}
-          {question.index} / {question.total}
+          {question.index} / {question.total} · до {question.points} б.
         </p>
         <p className="timer">{left}</p>
       </div>
