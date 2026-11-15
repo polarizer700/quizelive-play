@@ -52,4 +52,4 @@ jobs:
           exit 1
 
       - name: Smoke check
-        run: curl -fsS -o /dev/null https://play.quizlive.ru/
+        run: curl -fsS --retry 5 --retry-all-errors --retry-delay 5 -o /dev/null https://play.quizlive.ru/
