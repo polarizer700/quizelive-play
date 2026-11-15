@@ -187,15 +187,16 @@ function QuestionBoard({
             {answeredNames.length ? `: ${answeredNames.join(", ")}` : ""}
           </p>
         ) : null}
-        <div className="options">
-          {(question.options ?? []).map((option) => (
-            <p className={correct.has(option.id) ? "option correct" : "option"} key={option.id}>
-              {option.text}
-            </p>
-          ))}
-          {question.type === "text" ? <p className="option">Игроки вписывают ответ</p> : null}
-          {reveal?.correct_texts?.length ? <p className="option correct">{reveal.correct_texts.join(" · ")}</p> : null}
-        </div>
+        {reveal ? (
+          <div className="options">
+            {(question.options ?? []).map((option) => (
+              <p className={correct.has(option.id) ? "option correct" : "option"} key={option.id}>
+                {option.text}
+              </p>
+            ))}
+            {reveal.correct_texts?.length ? <p className="option correct">{reveal.correct_texts.join(" · ")}</p> : null}
+          </div>
+        ) : null}
         <div className="question-actions">
           <button className="primary" type="button" onClick={onNext}>
             {action}

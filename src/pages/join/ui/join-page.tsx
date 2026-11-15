@@ -156,8 +156,6 @@ function RevealBoard({
 
   return (
     <section>
-      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
-      <h1>{question.text}</h1>
       <div className="choices">
         {(question.options ?? []).map((option) => (
           <p className={optionVerdictClass(option.id, correctIds, mineIds)} key={option.id}>
@@ -210,10 +208,8 @@ function AnswerForm({
       }}
     >
       <p className="kicker">
-        {question.index} / {question.total}
+        Вопрос {question.index} / {question.total} — смотрите на экран
       </p>
-      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
-      <h1>{question.text}</h1>
       {accepted ? <p className="status">Ответ принят</p> : null}
       {question.type === "text" ? (
         <input
