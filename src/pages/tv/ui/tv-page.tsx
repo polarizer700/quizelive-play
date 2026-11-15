@@ -172,6 +172,17 @@ function QuestionBoard({
     <section
       className={question.image_url ? `question-live with-image with-image--${mediaOrientation}` : "question-live"}
     >
+      {/* Раунд и таймер — всегда вверху экрана, вне колонки с текстом */}
+      <div className="question-meta">
+        <p className="kicker">
+          {question.round && question.round_total ? `Раунд ${question.round} / ${question.round_total}` : null}
+          {question.round && question.round_total && question.category ? " · " : null}
+          {question.category || null}
+          {question.category || (question.round && question.round_total) ? " · " : null}
+          {question.index} / {question.total}
+        </p>
+        <p className="timer">{left}</p>
+      </div>
       {question.image_url ? (
         <div className="question-media">
           <img
@@ -186,16 +197,6 @@ function QuestionBoard({
         </div>
       ) : null}
       <div className="question-body">
-        <div className="question-meta">
-          <p className="kicker">
-            {question.round && question.round_total ? `Раунд ${question.round} / ${question.round_total}` : null}
-            {question.round && question.round_total && question.category ? " · " : null}
-            {question.category || null}
-            {question.category || (question.round && question.round_total) ? " · " : null}
-            {question.index} / {question.total}
-          </p>
-          <p className="timer">{left}</p>
-        </div>
         <h1 ref={fitRef} className="question-text">{question.text}</h1>
         {!reveal && answeredTotal > 0 ? (
           <p className="muted">

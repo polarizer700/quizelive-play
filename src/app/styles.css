@@ -371,13 +371,18 @@ textarea { min-height: 8rem; }
 /* Вертикальная картинка (высота больше ширины) — делим экран горизонтально: картинка слева */
 .question-live.with-image--portrait {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 /* Горизонтальная картинка (ширина больше высоты) — делим экран вертикально: картинка сверху */
 .question-live.with-image--landscape {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+/* Мета-строка (раунд, категория, таймер) — всегда вверху на всю ширину */
+.question-live .question-meta {
+  grid-column: 1 / -1;
 }
 
 .question-media {
