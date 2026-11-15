@@ -1,0 +1,13 @@
+#!/bin/sh
+# Pre-push: фронт не уезжает на сервер, пока не зелёные lint и build.
+# Активируется локально: git config core.hooksPath .githooks
+
+set -e
+
+echo "pre-push: lint…"
+corepack yarn lint
+
+echo "pre-push: build…"
+corepack yarn build
+
+echo "pre-push: всё зелёное, пушим."
