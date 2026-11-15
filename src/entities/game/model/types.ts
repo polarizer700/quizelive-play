@@ -12,6 +12,9 @@ export type Question = {
   text: string;
   type: "single" | "multiple" | "text";
   time_limit_sec: number;
+  category?: string;
+  round?: number;
+  round_total?: number;
   options?: { id: string; text: string }[];
   image_url?: string;
   deadline_unix_ms: number;

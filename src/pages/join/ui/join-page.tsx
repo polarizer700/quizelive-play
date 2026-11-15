@@ -132,6 +132,12 @@ export function JoinPage() {
           correctTexts={view.reveal?.correct_texts ?? []}
         />
       ) : null}
+      {view.phase === "break" ? (
+        <section>
+          <h1>Перерыв</h1>
+          <p className="muted">Скоро продолжим — ведущий запустит следующий раунд.</p>
+        </section>
+      ) : null}
       {view.phase === "leaderboard" ? <Place board={view.board} nickname={session.nickname} finished={false} /> : null}
     </main>
   );
@@ -208,7 +214,7 @@ function AnswerForm({
       }}
     >
       <p className="kicker">
-        Вопрос {question.index} / {question.total} — смотрите на экран
+        {question.category ? `${question.category} · ` : ""}Вопрос {question.index} / {question.total} — смотрите на экран
       </p>
       {accepted ? <p className="status">Ответ принят</p> : null}
       {question.type === "text" ? (

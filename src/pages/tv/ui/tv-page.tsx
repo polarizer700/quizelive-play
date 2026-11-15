@@ -106,6 +106,7 @@ export function TvPage() {
       </header>
       {view.error ? <p className="error">{view.error}</p> : null}
       {view.phase === "lobby" || !view.phase ? <Lobby qr={qr} players={view.players} onStart={() => send({ start_game: {} })} /> : null}
+      {view.phase === "break" ? <BreakScreen onNext={() => send({ next_step: {} })} /> : null}
       {view.phase === "leaderboard" || view.phase === "finished" ? (
         <Board
           entries={view.board}
@@ -176,6 +177,10 @@ function QuestionBoard({
       <div className="question-body">
         <div className="question-meta">
           <p className="kicker">
+            {question.round && question.round_total ? `Раунд ${question.round} / ${question.round_total}` : null}
+            {question.round && question.round_total && question.category ? " · " : null}
+            {question.category || null}
+            {question.category || (question.round && question.round_total) ? " · " : null}
             {question.index} / {question.total}
           </p>
           <p className="timer">{left}</p>
@@ -234,6 +239,19 @@ function useFitText(text: string) {
   return ref;
 }
 
+function BreakScreen({ onNext }: { onNext: () => void }) {
+  return (
+    <section className="board">
+      <p className="mark">Пауза</p>
+      <h1>Перерыв</h1>
+      <p className="muted">Налейте чаю, обсудите тактику — дальше будет ещё интереснее.</p>
+      <button className="primary" type="button" onClick={onNext}>
+        Продолжить
+      </button>
+    </section>
+  );
+}
+
 function Board({
   entries,
   finished,
@@ -286,6 +304,7 @@ function label(phase: string, connected: boolean) {
   if (phase === "question") return "Вопрос";
   if (phase === "reveal") return "Ответ";
   if (phase === "leaderboard") return "Промежуточный счёт";
+  if (phase === "break") return "Перерыв";
   if (phase === "finished") return "Конец";
   return "Лобби";
 }
