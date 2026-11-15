@@ -249,12 +249,22 @@ textarea { min-height: 8rem; }
   font-weight: 700;
 }
 
-.option.correct { background: var(--acid); }
+/* Правильный ответ — зелёный (mint) в том же бруталистском стиле */
+.option.correct {
+  background: var(--mint);
+  font-weight: 800;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.option.correct::before {
+  content: "✓ ";
+  font-weight: 900;
+}
 
 .choice.picked { background: var(--cobalt); color: #fff; }
 
 .verdict-correct {
-  background: var(--acid);
+  background: var(--mint);
   border: 3px solid var(--ink);
   color: var(--ink);
 }
