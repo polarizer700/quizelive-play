@@ -8,10 +8,10 @@ export function App() {
   const path = window.location.pathname;
   const page = path.startsWith("/join") ? <JoinPage /> : path.startsWith("/tv") ? <TvPage /> : <HomePage />;
   return (
-    <>
+    <div className="app">
       {page}
       {path.startsWith("/tv") ? null : <LegalLinks />}
       <CookieBanner />
-    </>
+    </div>
   );
 }

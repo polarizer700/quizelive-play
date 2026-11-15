@@ -25,6 +25,25 @@ button, input, textarea { font: inherit; }
 
 h1, p { margin: 0; }
 
+/* Каркас приложения: контент тянется, футер прибит к низу */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app > main {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Live-экран жёстко равен вьюпорту: без flex-растяжения, иначе basis 0%
+   перебивает height и страница расползается за 100dvh */
+.app > main.stage-live {
+  flex: none;
+  height: 100dvh;
+}
+
 h1 {
   font-weight: 900;
   letter-spacing: -0.01em;
@@ -316,11 +335,12 @@ textarea { min-height: 8rem; }
   box-shadow: 6px 6px 0 var(--ink);
 }
 
-/* Live-экран вопроса: вся высота вьюпорта, без верхней панели */
+/* Live-экран вопроса: ровно высота вьюпорта, без скролла страницы */
 .stage-live {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   padding: clamp(1rem, 3vh, 2.5rem) clamp(1rem, 3vw, 3rem);
 }
 
@@ -334,9 +354,20 @@ textarea { min-height: 8rem; }
 
 .question-live.with-image {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: clamp(1.5rem, 3vw, 3rem);
   align-items: stretch;
+}
+
+/* Вертикальная картинка (высота больше ширины) — делим экран горизонтально: картинка слева */
+.question-live.with-image--portrait {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* Горизонтальная картинка (ширина больше высоты) — делим экран вертикально: картинка сверху */
+.question-live.with-image--landscape {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
 }
 
 .question-media {
@@ -401,6 +432,7 @@ textarea { min-height: 8rem; }
   display: flex;
   align-items: center;
   gap: 1.2rem;
+  margin-top: auto;
 }
 
 @media (width < 800px) {
@@ -410,6 +442,8 @@ textarea { min-height: 8rem; }
   }
 
   .question-media { flex: 0 1 40vh; }
+
+  .question-live.with-image .question-body { flex: 1; }
 }
 
 .cookie-banner {
@@ -440,7 +474,8 @@ textarea { min-height: 8rem; }
   flex-wrap: wrap;
   gap: 0.8rem;
   width: min(520px, calc(100% - 2rem));
-  margin: 1.5rem auto 2rem;
+  margin: auto auto 2rem;
+  padding-top: 1.5rem;
   color: var(--muted);
   font-family: "Space Mono", "Courier New", monospace;
   font-size: 0.85rem;

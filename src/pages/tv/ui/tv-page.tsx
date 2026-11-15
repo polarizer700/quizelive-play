@@ -166,12 +166,23 @@ function QuestionBoard({
   const answered = new Set(answeredIds);
   const answeredNames = players.filter((player) => answered.has(player.id)).map((player) => player.nickname);
   const fitRef = useFitText(question.text);
+  const [mediaOrientation, setMediaOrientation] = useState<"portrait" | "landscape">("portrait");
 
   return (
-    <section className={question.image_url ? "question-live with-image" : "question-live"}>
+    <section
+      className={question.image_url ? `question-live with-image with-image--${mediaOrientation}` : "question-live"}
+    >
       {question.image_url ? (
         <div className="question-media">
-          <img alt="" src={question.image_url} />
+          <img
+            alt=""
+            src={question.image_url}
+            onLoad={(event) =>
+              setMediaOrientation(
+                event.currentTarget.naturalHeight > event.currentTarget.naturalWidth ? "portrait" : "landscape",
+              )
+            }
+          />
         </div>
       ) : null}
       <div className="question-body">
