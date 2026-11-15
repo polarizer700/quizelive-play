@@ -1,8 +1,7 @@
 import { createRoot } from "react-dom/client";
 
-import "@fontsource-variable/fraunces/wght.css";
-import "@fontsource-variable/fraunces/wght-italic.css";
 import "@fontsource-variable/outfit";
+import "@fontsource/space-mono";
 
 import { App } from "@app/app";
 import "@app/styles.css";
