@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 
 import { useGame } from "@entities/game";
@@ -74,6 +74,24 @@ export function TvPage() {
     );
   }
 
+  const livePhase = view.phase === "question" || view.phase === "reveal";
+  if (livePhase && view.question) {
+    return (
+      <main className="stage-live">
+        <QuestionBoard
+          question={view.question}
+          reveal={view.phase === "reveal" ? view.reveal : undefined}
+          players={view.players}
+          answeredIds={view.answeredIds}
+          answeredCount={view.answeredCount}
+          answeredTotal={view.answeredTotal}
+          onNext={() => send({ next_step: {} })}
+          action={view.phase === "question" ? "Показать ответ" : "Дальше"}
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="stage-page">
       <header className="topbar">
@@ -88,29 +106,6 @@ export function TvPage() {
       </header>
       {view.error ? <p className="error">{view.error}</p> : null}
       {view.phase === "lobby" || !view.phase ? <Lobby qr={qr} players={view.players} onStart={() => send({ start_game: {} })} /> : null}
-      {view.phase === "question" && view.question ? (
-        <QuestionBoard
-          question={view.question}
-          players={view.players}
-          answeredIds={view.answeredIds}
-          answeredCount={view.answeredCount}
-          answeredTotal={view.answeredTotal}
-          onNext={() => send({ next_step: {} })}
-          action="Показать ответ"
-        />
-      ) : null}
-      {view.phase === "reveal" && view.question ? (
-        <QuestionBoard
-          question={view.question}
-          reveal={view.reveal}
-          players={view.players}
-          answeredIds={view.answeredIds}
-          answeredCount={view.answeredCount}
-          answeredTotal={view.answeredTotal}
-          onNext={() => send({ next_step: {} })}
-          action="Дальше"
-        />
-      ) : null}
       {view.phase === "leaderboard" || view.phase === "finished" ? (
         <Board
           entries={view.board}
@@ -169,36 +164,73 @@ function QuestionBoard({
   const correct = new Set(reveal?.correct_option_ids ?? []);
   const answered = new Set(answeredIds);
   const answeredNames = players.filter((player) => answered.has(player.id)).map((player) => player.nickname);
+  const fitRef = useFitText(question.text);
 
   return (
-    <section className="question">
-      <p className="kicker">
-        {question.index} / {question.total}
-      </p>
-      {question.image_url ? <img className="question-image" alt="" src={question.image_url} /> : null}
-      <h1>{question.text}</h1>
-      <p className="timer">{left}</p>
-      {!reveal && answeredTotal > 0 ? (
-        <p className="muted">
-          Ответили {answeredCount} из {answeredTotal}
-          {answeredNames.length ? `: ${answeredNames.join(", ")}` : ""}
-        </p>
+    <section className={question.image_url ? "question-live with-image" : "question-live"}>
+      {question.image_url ? (
+        <div className="question-media">
+          <img alt="" src={question.image_url} />
+        </div>
       ) : null}
-      <div className="options">
-        {(question.options ?? []).map((option) => (
-          <p className={correct.has(option.id) ? "option correct" : "option"} key={option.id}>
-            {option.text}
+      <div className="question-body">
+        <div className="question-meta">
+          <p className="kicker">
+            {question.index} / {question.total}
           </p>
-        ))}
-        {question.type === "text" ? <p className="option">Игроки вписывают ответ</p> : null}
-        {reveal?.correct_texts?.length ? <p className="option correct">{reveal.correct_texts.join(" · ")}</p> : null}
+          <p className="timer">{left}</p>
+        </div>
+        <h1 ref={fitRef} className="question-text">{question.text}</h1>
+        {!reveal && answeredTotal > 0 ? (
+          <p className="muted">
+            Ответили {answeredCount} из {answeredTotal}
+            {answeredNames.length ? `: ${answeredNames.join(", ")}` : ""}
+          </p>
+        ) : null}
+        <div className="options">
+          {(question.options ?? []).map((option) => (
+            <p className={correct.has(option.id) ? "option correct" : "option"} key={option.id}>
+              {option.text}
+            </p>
+          ))}
+          {question.type === "text" ? <p className="option">Игроки вписывают ответ</p> : null}
+          {reveal?.correct_texts?.length ? <p className="option correct">{reveal.correct_texts.join(" · ")}</p> : null}
+        </div>
+        <div className="question-actions">
+          <button className="primary" type="button" onClick={onNext}>
+            {action}
+          </button>
+          {reveal ? <p className="muted">Или подождите — дальше само</p> : null}
+        </div>
       </div>
-      <button className="primary" type="button" onClick={onNext}>
-        {action}
-      </button>
-      {reveal ? <p className="muted">Или подождите — дальше само</p> : null}
     </section>
   );
+}
+
+function useFitText(text: string) {
+  const ref = useRef<HTMLHeadingElement | null>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+
+    const fit = () => {
+      el.style.fontSize = "";
+      let size = parseFloat(window.getComputedStyle(el).fontSize);
+      const min = 18;
+      while (size > min && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+        size -= 2;
+        el.style.fontSize = `${size}px`;
+      }
+    };
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [text]);
+
+  return ref;
 }
 
 function Board({
