@@ -70,7 +70,8 @@ export function useGame(hello: Command | null) {
 
 function remember(helloRef: { current: Command | null }, message: ServerMessage) {
   if (message.host_resume?.token) {
-    sessionStorage.setItem("quizelive.hostResume", message.host_resume.token);
+    // localStorage, а не sessionStorage: экран должен пережить закрытие вкладки
+    localStorage.setItem("quizelive.hostResume", message.host_resume.token);
     helloRef.current = { create_room: { host_token: message.host_resume.token } };
     const url = new URL(window.location.href);
     if (url.searchParams.has("token")) {

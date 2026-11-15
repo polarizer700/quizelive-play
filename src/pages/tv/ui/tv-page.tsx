@@ -5,13 +5,18 @@ import { useGame } from "@entities/game";
 
 export function TvPage() {
   const [draft, setDraft] = useState("");
-  const [token, setToken] = useState(() => new URLSearchParams(window.location.search).get("token") ?? sessionStorage.getItem("quizelive.hostResume") ?? "");
+  const [token, setToken] = useState(() => new URLSearchParams(window.location.search).get("token") ?? localStorage.getItem("quizelive.hostResume") ?? "");
   const hello = useMemo(() => (token ? { create_room: { host_token: token } } : null), [token]);
   const { view, send } = useGame(hello);
   const [qr, setQr] = useState("");
 
+  // Протухший/чужой resume-токен не крутим вечно: чистим и показываем ввод токена
+  useEffect(() => {
+    if (view.error && !view.code) localStorage.removeItem("quizelive.hostResume");
+  }, [view.error, view.code]);
+
   function startFresh() {
-    sessionStorage.removeItem("quizelive.hostResume");
+    localStorage.removeItem("quizelive.hostResume");
     const url = new URL(window.location.href);
     if (url.searchParams.has("token")) {
       url.searchParams.delete("token");
@@ -39,7 +44,7 @@ export function TvPage() {
       <main className="panel">
         <p className="mark">Экран</p>
         <h1>Токен ведущего</h1>
-        <p className="muted">Выпустите его в студии у опубликованной викторины и вставьте сюда. Он действует около двух минут.</p>
+        <p className="muted">Выпустите его в студии у опубликованной викторины и вставьте сюда. Он действует 12 часов после выпуска.</p>
         <textarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Вставьте токен" />
         <button className="primary" type="button" onClick={() => setToken(draft.trim())}>
           Открыть комнату
